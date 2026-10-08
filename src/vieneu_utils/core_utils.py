@@ -1,5 +1,6 @@
 """Text-chunking + audio-gap helpers cho đường v3 streaming (minimal).
 
+Đã cắt gọn từ https://github.com/pnnbao97/VieNeu-TTS (Apache-2.0) — xem NOTICE.
 Giữ: tách câu (nhận biết ngoặc/trích dẫn), đóng gói chunk, phân loại ranh giới,
 khoảng nghỉ, đo im lặng mép, trần frame theo phoneme.
 Bỏ: split v1/v2 legacy, PhoneChunk, join/trim/fade, babble guard, env_bool.

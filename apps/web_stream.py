@@ -1,5 +1,6 @@
 """VieNeu-TTS v3 Turbo — minimal CPU streaming API (FastAPI).
 
+Đã cắt gọn từ https://github.com/pnnbao97/VieNeu-TTS (Apache-2.0) — xem NOTICE.
 Chỉ giữ đường TTS giọng preset:
     uv run python -m apps.web_stream        # http://127.0.0.1:8001
     GET /stream?text=...&voice_id=...  -> audio/wav 48kHz

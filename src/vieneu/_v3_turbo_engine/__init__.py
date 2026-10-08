@@ -1,4 +1,7 @@
-"""Minimal engine package: torch-free ONNX streaming engine only."""
+"""Minimal engine package: torch-free ONNX streaming engine only.
+
+Đã cắt gọn từ https://github.com/pnnbao97/VieNeu-TTS (Apache-2.0) — xem NOTICE.
+"""
 
 __all__ = ["OnnxV3LiteEngine"]
 

@@ -1,5 +1,6 @@
 """VieNeu-TTS v3 Turbo — minimal preset-voice backend (ONNX/CPU).
 
+Đã cắt gọn từ https://github.com/pnnbao97/VieNeu-TTS (Apache-2.0) — xem NOTICE.
 Giữ duy nhất đường TTS giọng sẵn + stream:
     tts = Vieneu(backend="onnx")
     wav = next(tts.infer_stream("Xin chào", voice="Xuân Vĩnh"))

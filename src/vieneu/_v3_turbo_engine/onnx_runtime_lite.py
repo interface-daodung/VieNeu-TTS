@@ -1,5 +1,6 @@
 """VieNeu-TTS v3 Turbo — minimal torch-free ONNX engine (CPU, streaming only).
 
+Đã cắt gọn từ https://github.com/pnnbao97/VieNeu-TTS (Apache-2.0) — xem NOTICE.
 Chỉ giữ đường preset-voice streaming: prompt build (numpy) + transformer
 (prefill/decode/acoustic ONNX) + MOSS streaming codec (decode_step).
 Đã bỏ: voice cloning (speaker encoder/denoiser/encode), infer thường,

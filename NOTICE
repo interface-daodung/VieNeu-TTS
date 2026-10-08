@@ -1,0 +1,46 @@
+VieNeu-TTS — Minimal personal-use fork
+==========================================
+
+This fork is a trimmed, personal-local-use derivative of the upstream
+project VieNeu-TTS (v3 Turbo).
+
+Upstream project
+---------------
+VieNeu-TTS by Pham Nguyen Ngoc Bao (pnnbao97).
+Homepage: https://github.com/pnnbao97/VieNeu-TTS
+Model weights: pnnbao-ump/VieNeu-TTS-v3-Turbo (Hugging Face)
+Codec: OpenMOSS-Team/MOSS-Audio-Tokenizer-Nano(-ONNX)
+Phonemizer: sea-g2p (https://github.com/pnnbao97/sea-g2p)
+
+Copyright of the upstream code, model weights, preset voices and audio
+samples belongs to their respective owners. This fork keeps the upstream
+Apache-2.0 license (see LICENSE) and retains all applicable copyright,
+patent, trademark and attribution notices.
+
+What this fork changed
+----------------------
+Copyright (c) 2026 Dao Manh Dung <interface.daodung@gmail.com>
+Repository: https://github.com/interface-daodung/VieNeu-TTS
+
+Kept only the preset-voice ONNX/CPU streaming path
+(apps/web_stream.py + src/vieneu + src/vieneu_utils) for offline,
+single-user use on a personal machine. Removed: voice cloning,
+Gradio UI, Docker, fine-tuning, GPU backends, tests and related docs.
+
+License
+-------
+The combined work in this repository is distributed under the
+Apache License, Version 2.0 (see LICENSE). The Apache-2.0 license text
+itself is unchanged (the upstream project has no NOTICE file, so
+section 4(d) does not apply here).
+
+This NOTICE serves two purposes:
+  * section 4(b) — records that this fork modified the upstream files
+    (each derived source file also carries a one-line header saying so);
+  * attribution for the upstream work, model weights and codec as
+    required by section 4(c) and good practice.
+
+The model weights (pnnbao-ump/VieNeu-TTS-v3-Turbo) are separately
+published under Apache-2.0 on Hugging Face; they are NOT redistributed
+in this repository (model/ is git-ignored). Users who download them
+are bound by that model repository's own license terms.

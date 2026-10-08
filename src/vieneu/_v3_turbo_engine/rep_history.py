@@ -1,5 +1,6 @@
 """Sliding-window repetition-penalty history, shared by every v3 Turbo path.
 
+Đã cắt gọn từ https://github.com/pnnbao97/VieNeu-TTS (Apache-2.0) — xem NOTICE.
 Lý do cửa sổ trượt thay vì set tích lũy: codebook chỉ có 1024 code/kênh, nên
 sau vài trăm frame một set không giới hạn đã phạt gần nửa codebook — kể cả các
 code hợp lệ phải lặp lại (khoảng lặng, nguyên âm kéo dài) — làm giọng trôi dần

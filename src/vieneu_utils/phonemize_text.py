@@ -1,5 +1,6 @@
 """Text cleaning + phonemization cho VieNeu-TTS (minimal).
 
+Đã cắt gọn từ https://github.com/pnnbao97/VieNeu-TTS (Apache-2.0) — xem NOTICE.
 Giữ: normalize (sea-g2p, luôn punc_norm), emotion cue, chia chunk v3 theo câu.
 Bỏ: phonemize batch/dict, chunk legacy v1/v2.
 """
