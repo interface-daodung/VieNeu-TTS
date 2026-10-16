@@ -52,8 +52,109 @@ model/
 ```
 
 - App ưu tiên `model/` nếu thư mục tồn tại, không cần mạng hay HuggingFace cache.
-- Nếu thiếu `model/`, engine tự tải từ `pnnbao-ump/VieNeu-TTS-v3-Turbo` và `OpenMOSS-Team/MOSS-Audio-Tokenizer-Nano-ONNX` về cache (cần mạng lần đầu).
+- Nếu thiếu `model/`, engine tự tải từ `pnnbao-ump/VieNeu-TTS-v3-Turbo` và `OpenMOSS-Team/MOSS-Audio-Tokenizer-Nano-ONNX` về `model/` (cần mạng lần đầu).
 - Thư mục `model/` đã nằm trong `.gitignore` nên không bị push lên GitHub.
+
+## 4b. Deploy lên server (SSH)
+
+Cách nhanh nhất — chạy trực tiếp trên server:
+
+```bash
+git clone https://github.com/interface-daodung/VieNeu-TTS.git
+cd VieNeu-TTS
+cp .env.example .env
+# Dinh token trong .env:
+#   VIENEU_TOKEN=mat-khau-cua-ban
+bash scripts/deploy.sh
+```
+
+Script sẽ:
+1. Cài `uv` nếu chưa có, sync dependencies
+2. Tải INT8 model vào `model/` (bỏ qua nếu đã có, retry 3 lần nếu lỗi)
+3. Verify model integrity
+4. Nếu chạy với root → cài **systemd service** (`vieneu-tts`, auto-restart)
+5. Nếu không root → fallback `nohup` + PID file + log
+
+### Token auth
+
+Khi deploy trên server public, **bắt buộc** set token trong `.env`:
+
+```bash
+VIENEU_TOKEN=mat-khau-cua-ban
+```
+
+Request phải kèm token:
+
+```bash
+# GET (query param)
+curl "http://server:8001/stream?text=Xin+chao&token=mat-khau-cua-ban"
+
+# POST (JSON body)
+curl -X POST http://server:8001/stream \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Xin chào", "token": "mat-khau-cua-ban"}'
+
+# Health check
+curl "http://server:8001/health?token=mat-khau-cua-ban"
+```
+
+### Quản lý service (systemd)
+
+```bash
+sudo systemctl status vieneu-tts      # trạng thái
+sudo systemctl restart vieneu-tts     # restart
+sudo journalctl -u vieneu-tts -f      # xem log real-time
+```
+
+### Quản lý service (nohup fallback)
+
+```bash
+cat .server.pid                      # xem PID
+kill $(cat .server.pid)              # dừng server
+tail -f server.log                   # xem log
+```
+
+### INT8 hardcode
+
+Model INT8 (`onnx_int8`) đã được hardcode trong engine — không thể override bằng env. Đảm bảo luôn dùng bản nhẹ nhất.
+
+### Ví dụ `.env` cho server deploy
+
+```bash
+# Server co token auth + public
+VIENEU_PRECISION=int8
+VIENEU_TOKEN=mk-secret-token-here
+VIENEU_ONNX_DIR=/opt/vieneu/model/onnx_int8
+VIENEU_CODEC_DIR=/opt/vieneu/model/codec
+VIENEU_HOST=0.0.0.0
+VIENEU_PORT=8001
+PYTHONUTF8=1
+PYTHONIOENCODING=utf-8
+```
+
+### Ví dụ `.env` cho localhost dev
+
+```bash
+# Local dev, khong token
+VIENEU_PRECISION=int8
+VIENEU_HOST=127.0.0.1
+VIENEU_PORT=8001
+PYTHONUTF8=1
+PYTHONIOENCODING=utf-8
+```
+
+### Chạy nền (survive SSH disconnect)
+
+```bash
+nohup uv run python -m apps.web_stream > server.log 2>&1 &
+echo $! > .server.pid
+```
+
+Kiểm tra:
+
+```bash
+curl http://127.0.0.1:8001/docs
+```
 
 ## 5. Dùng hàng ngày
 
@@ -111,11 +212,14 @@ with open("out.pcm", "wb") as f:
 
 | Biến | Mặc định | Nghĩa |
 |---|---|---|
-| `VIENEU_PRECISION` | `fp32` | `int8` nhẹ/nhanh hơn (~3x), `fp32` chất lượng tối đa |
-| `VIENEU_ONNX_DIR` | `model/onnx_int8` | Đường dẫn backbone local; bỏ trống = dùng HF cache |
-| `VIENEU_CODEC_DIR` | `model/codec` | Đường dẫn codec local; bỏ trống = dùng HF cache |
+| `VIENEU_PRECISION` | `int8` | Hardcode, không override |
+| `VIENEU_TOKEN` | (trống) | Token auth; bắt buộc khi deploy public |
+| `VIENEU_ONNX_DIR` | `model/onnx_int8` | Đường dẫn backbone local |
+| `VIENEU_CODEC_DIR` | `model/codec` | Đường dẫn codec local |
+| `VIENEU_HOST` | `127.0.0.1` | Bind address; `0.0.0.0` cho server public |
+| `VIENEU_PORT` | `8001` | Cổng server |
 
-Xem [.env.example](.env.example). `PYTHONUTF8=1` đã bật sẵn trong `Makefile` để không lỗi tiếng Việt trên Windows.
+Xem [.env.example](.env.example) để biết ví dụ cấu hình server/local. `PYTHONUTF8=1` đã bật sẵn trong `Makefile` để không lỗi tiếng Việt trên Windows.
 
 ## 7. Cấu trúc
 

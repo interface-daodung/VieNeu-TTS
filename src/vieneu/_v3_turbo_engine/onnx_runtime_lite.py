@@ -56,7 +56,7 @@ class OnnxV3LiteEngine:
         onnx_repo: Optional[str] = None,
         codec_repo: str = _CODEC_REPO,
         onnx_dir: Optional[str] = None,
-        onnx_subfolder: str = "onnx_update",
+        onnx_subfolder: str = "onnx_int8",
         codec_dir: Optional[str] = None,
         threads: int = 0,
         **_kw,
@@ -68,18 +68,25 @@ class OnnxV3LiteEngine:
         self.checkpoint_path = checkpoint_path
         repo = onnx_repo or checkpoint_path
 
-        if not onnx_dir:
-            try:
-                from huggingface_hub import hf_hub_download
-                hf_hub_download(checkpoint_path, "config.json")
-            except Exception:
-                pass
+        # Hardcode INT8 — luon dung onnx_int8 subfolder
+        onnx_subfolder = "onnx_int8"
+
+        # Resolve local dirs first (model/onnx_int8, model/codec)
+        root = Path(__file__).resolve().parents[3]
+        model_dir = root / "model"
+        if onnx_dir is None:
+            default_onnx = model_dir / "onnx_int8"
+            onnx_dir = str(default_onnx) if default_onnx.is_dir() else None
+        if codec_dir is None:
+            default_codec = model_dir / "codec"
+            codec_dir = str(default_codec) if default_codec.is_dir() else None
 
         if onnx_dir:
             vd = Path(onnx_dir)
         else:
-            vd = self._fetch(repo, _GRAPH_FILES, onnx_subfolder)
-        cd = Path(codec_dir) if codec_dir else self._fetch(codec_repo, _CODEC_FILES, None)
+            # Download into model/ local (not HF cache) for server deploys
+            vd = self._fetch_local(repo, _GRAPH_FILES, onnx_subfolder, model_dir / "onnx_int8")
+        cd = Path(codec_dir) if codec_dir else self._fetch_local(codec_repo, _CODEC_FILES, None, model_dir / "codec")
 
         c = json.loads((vd / "config.json").read_text(encoding="utf-8"))
         self.cfg = c
@@ -136,7 +143,22 @@ class OnnxV3LiteEngine:
 
     # ── artifact helpers ──────────────────────────────────────────────────────
     @staticmethod
+    def _fetch_local(repo: str, files: List[str], subfolder: Optional[str], dest_dir: Path) -> Path:
+        """Download files from HF repo into a local directory (model/onnx_int8 or model/codec)."""
+        from huggingface_hub import hf_hub_download
+        import shutil
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        for fn in files:
+            dest = dest_dir / fn
+            if dest.exists() and dest.stat().st_size > 0:
+                continue
+            cached = hf_hub_download(repo, fn, repo_type="model", subfolder=subfolder or None)
+            shutil.copy2(cached, dest)
+        return dest_dir
+
+    @staticmethod
     def _fetch(repo: str, files: List[str], subfolder: Optional[str]) -> Path:
+        """Fallback: download into HF cache (for local dev without model/)."""
         from huggingface_hub import hf_hub_download
         last = None
         for fn in files:

@@ -40,7 +40,7 @@ class V3TurboVieNeuTTS(BaseVieneuTTS):
         onnx_repo: Optional[str] = None,
         onnx_dir: Optional[str] = None,
         codec_dir: Optional[str] = None,
-        precision: str = "fp32",
+        precision: str = "int8",
         onnx_subfolder: Optional[str] = None,
         threads: int = 0,
         **kwargs: Any,
@@ -50,11 +50,12 @@ class V3TurboVieNeuTTS(BaseVieneuTTS):
 
         if backend != "onnx":
             raise ValueError(f"Minimal server only supports backend='onnx', got {backend!r}.")
-        if onnx_subfolder is None:
-            onnx_subfolder = {"int8": "onnx_int8", "fp32": "onnx_update"}.get(str(precision).lower(), "onnx_update")
+        # Hardcode int8 — khong cho override bang env
+        precision = "int8"
+        onnx_subfolder = "onnx_int8"
 
         from ._v3_turbo_engine.onnx_runtime_lite import OnnxV3LiteEngine
-        logger.info(f"Loading VieNeu-TTS v3 Turbo (ONNX/CPU) from: {backbone_repo}/{onnx_subfolder} ...")
+        logger.info(f"Loading VieNeu-TTS v3 Turbo (ONNX/CPU, INT8) from: {backbone_repo}/{onnx_subfolder} ...")
         self.engine = OnnxV3LiteEngine(
             checkpoint_path=backbone_repo,
             onnx_repo=onnx_repo,
