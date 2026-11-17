@@ -107,6 +107,26 @@ with open("out.pcm", "wb") as f:
 - Mỗi request `/stream` mới chiếm quyền phát, stream cũ tự dừng ở chunk kế tiếp.
 - Muốn nghe song song nhiều máy: đây không phải tool dành cho việc đó.
 
+### 5.6. Chế độ Camera 16kHz (Xuất trực tiếp cho Loa Camera Imou/Dahua)
+
+Dành riêng cho tích hợp AI Camera (Dahua / Imou) hoặc các thiết bị IoT yêu cầu chuẩn **16,000 Hz 16-bit Mono**:
+
+* **Cách 1: Thêm cờ `camera_mode=true`**
+  ```bash
+  curl "http://localhost:8001/stream?text=Xin%20ch%C3%A0o&camera_mode=true" --output cam16k.wav
+  ```
+* **Cách 2: Chỉ định `sample_rate=16000`**
+  ```bash
+  curl -X POST http://localhost:8001/stream \
+    -H "Content-Type: application/json" \
+    -d '{"text": "Xin chào bạn.", "voice_id": "Minh Quân", "sample_rate": 16000}' \
+    --output cam16k.wav
+  ```
+Lợi ích:
+- Tự động hạ mẫu chuẩn 3:1 từ 48kHz về 16kHz trực tiếp theo từng chunk stream thời gian thực.
+- Giảm **66% dung lượng truyền mạng** (từ ~330KB xuống chỉ còn ~100KB).
+- Client nhận được audio 16kHz ngay từ chunk đầu tiên (TTFA ~300ms) để bắn thẳng ra loa Camera mà không cần thêm bước chuyển đổi.
+
 ## 6. Cấu hình (`.env`)
 
 | Biến | Mặc định | Nghĩa |
